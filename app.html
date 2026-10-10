@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trellis math - slat grid, twine grid, espalier wire</title>
+<style>
+  :root { --ink:#26140e; --accent:#c75b3f; --paper:#faf7f4; --card:#ffffff; --line:#ecd9cf; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Georgia, 'Times New Roman', serif; background:var(--paper); color:var(--ink); }
+  header { padding:2rem 1.25rem 1rem; max-width:960px; margin:0 auto; }
+  h1 { font-size:1.9rem; margin:0 0 .35rem; }
+  header p { margin:.25rem 0; color:#5c3a2c; max-width:46rem; line-height:1.45; }
+  .norms { font-size:.9rem; color:#6b4433; margin-top:.6rem; }
+  main { max-width:960px; margin:0 auto; padding:0 1.25rem 3rem; display:grid; gap:1.25rem; }
+  @media (min-width:820px){ main { grid-template-columns:1fr 1fr 1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:1.1rem 1.1rem 1.25rem; }
+  .card h2 { font-size:1.15rem; margin:.1rem 0 .5rem; }
+  .card p.desc { font-size:.9rem; color:#6b4433; margin:.2rem 0 .8rem; line-height:1.4; }
+  label { display:block; font-size:.85rem; margin:.55rem 0 .15rem; color:#553627; }
+  input { width:100%; padding:.45rem .5rem; font-size:1rem; border:1px solid var(--line); border-radius:6px; font-family:inherit; background:#fff; }
+  button { margin-top:.8rem; width:100%; padding:.55rem; font-size:1rem; font-family:inherit; background:var(--accent); color:#fff; border:0; border-radius:6px; cursor:pointer; }
+  button:hover { background:#a84932; }
+  .out { margin-top:.9rem; font-size:.95rem; line-height:1.5; min-height:3.2rem; }
+  .err { color:#a02323; }
+  footer { max-width:960px; margin:0 auto; padding:0 1.25rem 2.5rem; font-size:.85rem; color:#c09b8b; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Trellis math</h1>
+  <p>Count the slats, measure the twine, string the wall. Exact arithmetic, every borrowed number labeled.</p>
+  <p class="norms">Labeled norms: about a 15 cm grid for slats and twine, 10% extra for knots; espalier wires 40 cm apart, anchors every 60 cm, 5% extra for tensioning.</p>
+</header>
+<main>
+  <section class="card" id="slat">
+    <h2>Slat grid</h2>
+    <p class="desc">Trellis dimensions become slat counts, the real gap and lumber meters.</p>
+    <label for="g-w">Trellis width (cm)</label>
+    <input id="g-w" type="number" step="1" min="0" value="180">
+    <label for="g-h">Trellis height (cm)</label>
+    <input id="g-h" type="number" step="1" min="0" value="180">
+    <label for="g-gap">Target gap (cm)</label>
+    <input id="g-gap" type="number" step="0.5" min="0" value="15">
+    <button id="g-go">Count the slats</button>
+    <div class="out" id="g-out"></div>
+  </section>
+
+  <section class="card" id="twine">
+    <h2>Twine grid</h2>
+    <p class="desc">The same grid becomes line counts and twine meters with knot allowance.</p>
+    <label for="t-w">Trellis width (cm)</label>
+    <input id="t-w" type="number" step="1" min="0" value="180">
+    <label for="t-h">Trellis height (cm)</label>
+    <input id="t-h" type="number" step="1" min="0" value="180">
+    <label for="t-grid">Grid size (cm)</label>
+    <input id="t-grid" type="number" step="0.5" min="0" value="15">
+    <button id="t-go">Measure the twine</button>
+    <div class="out" id="t-out"></div>
+  </section>
+
+  <section class="card" id="espalier">
+    <h2>Espalier wire</h2>
+    <p class="desc">Wall dimensions become wire rows, vine eyes and tensioned wire meters.</p>
+    <label for="e-w">Wall width (cm)</label>
+    <input id="e-w" type="number" step="1" min="0" value="300">
+    <label for="e-h">Wall height (cm)</label>
+    <input id="e-h" type="number" step="1" min="0" value="200">
+    <label for="e-rg">Row gap (cm)</label>
+    <input id="e-rg" type="number" step="5" min="0" value="40">
+    <label for="e-ag">Anchor gap (cm)</label>
+    <input id="e-ag" type="number" step="5" min="0" value="60">
+    <button id="e-go">String the wall</button>
+    <div class="out" id="e-out"></div>
+  </section>
+</main>
+<footer>Built by the app factory. <a href="index.html">About</a> &middot; <a href="https://github.com/iLanis-agent/trellismath">Source</a></footer>
+<script src="engine.js"></script>
+<script>
+function num(id){ return parseFloat(document.getElementById(id).value); }
+function show(id, r, render){
+  var el = document.getElementById(id);
+  if (r.error) { el.textContent = r.error; el.classList.add('err'); }
+  else { el.textContent = render(r); el.classList.remove('err'); }
+}
+document.getElementById('g-go').addEventListener('click', function(){
+  show('g-out', TrellisMath.slatGrid(num('g-w'),num('g-h'),num('g-gap')), TrellisMath.renderSlat);
+});
+document.getElementById('t-go').addEventListener('click', function(){
+  show('t-out', TrellisMath.twineGrid(num('t-w'),num('t-h'),num('t-grid')), TrellisMath.renderTwine);
+});
+document.getElementById('e-go').addEventListener('click', function(){
+  show('e-out', TrellisMath.espalierWire(num('e-w'),num('e-h'),num('e-rg'),num('e-ag')), TrellisMath.renderEspalier);
+});
+</script>
+</body>
+</html>
